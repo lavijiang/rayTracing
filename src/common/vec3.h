@@ -4,8 +4,8 @@
 #include<cmath>
 #include<stdlib.h>
 #include<iostream>
-// using std::sqrt;
-// using std::fabs;
+using std::sqrt;
+using std::fabs;
 class vec3 {
     public:
         vec3():e{0,0,0} {}
