@@ -1,4 +1,7 @@
+#files
 *.out
 *.ppm
 *.o
 main
+#Directories
+build/
