@@ -4,6 +4,7 @@
 
 #include <iostream>
 
+//命中球
 bool hit_sphere(const point3& center, double radius, const ray& r) {
     vec3 oc = r.origin() - center;
     auto a = dot(r.direction(), r.direction());
@@ -13,9 +14,31 @@ bool hit_sphere(const point3& center, double radius, const ray& r) {
     return (discriminant > 0);
 }
 
+//命中三角形
+bool hit_triangle(const point3& v0,const point3& v1,const point3& v2, const ray& r) {
+    //reference https://blog.csdn.net/zhanxi1992/article/details/109903792
+    vec3 E1 = v1 - v0;
+    vec3 E2 = v2 - v0;
+    point3 orig = r.origin();
+    vec3 dir = r.direction();
+    vec3 S = orig - v0;
+    auto S1 = cross(dir,E2);
+    auto S2 = cross(S,E1);
+    float coeff = 1.0 / dot(S1,E1);
+    float t = coeff * dot(S2,E2);
+    float b1 = coeff * dot(S1,S);
+    float b2 = coeff * dot(S2,dir);
+    if(t>=0 && b1 >= 0 && b2 >= 0 && (1-b1-b2)>=0){
+        return true;
+    }
+    return false;
+}
+
 color ray_color(const ray& r) {
     if (hit_sphere(point3(0,0,-1), 0.5, r))
         return color(1, 0, 0);
+    if (hit_triangle(point3(-2,-0.5,-1), point3(2,-0.5,-1),point3(0,1,-1), r))
+        return color(0, 1, 0);
     vec3 unit_direction = unit_vector(r.direction());
     auto t = 0.5*(unit_direction.y() + 1.0);
     return (1.0-t)*color(1.0, 1.0, 1.0) + t*color(0.5, 0.7, 1.0);
