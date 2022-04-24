@@ -1,17 +1,24 @@
+#include "rtweekend.h"
+
 #include "color.h"
-#include "ray.h"
-#include "vec3.h"
+#include "hittable_list.h"
+#include "sphere.h"
 
 #include <iostream>
 
 //命中球
-bool hit_sphere(const point3& center, double radius, const ray& r) {
+double hit_sphere(const point3& center, double radius, const ray& r) {
     vec3 oc = r.origin() - center;
-    auto a = dot(r.direction(), r.direction());
-    auto b = 2.0 * dot(oc, r.direction());
-    auto c = dot(oc, oc) - radius*radius;
-    auto discriminant = b*b - 4*a*c;
-    return (discriminant > 0);
+    auto a = r.direction().length_squared();
+    auto half_b = dot(oc, r.direction());
+    auto c = oc.length_squared() - radius*radius;
+    auto discriminant = half_b*half_b - a*c;
+
+    if (discriminant < 0) {
+        return -1.0;
+    } else {
+        return (-half_b - sqrt(discriminant) ) / a;
+    }
 }
 
 //命中三角形
@@ -34,11 +41,11 @@ bool hit_triangle(const point3& v0,const point3& v1,const point3& v2, const ray&
     return false;
 }
 
-color ray_color(const ray& r) {
-    if (hit_sphere(point3(0,0,-1), 0.5, r))
-        return color(1, 0, 0);
-    if (hit_triangle(point3(-2,-0.5,-1), point3(2,-0.5,-1),point3(0,1,-1), r))
-        return color(0, 1, 0);
+color ray_color(const ray& r, const hittable& world) {
+    hit_record rec;
+    if (world.hit(r, 0, infinity, rec)) {
+        return 0.5 * (rec.normal + color(1,1,1));
+    }
     vec3 unit_direction = unit_vector(r.direction());
     auto t = 0.5*(unit_direction.y() + 1.0);
     return (1.0-t)*color(1.0, 1.0, 1.0) + t*color(0.5, 0.7, 1.0);
@@ -51,8 +58,12 @@ int main() {
     const int image_width = 400;
     const int image_height = static_cast<int>(image_width / aspect_ratio);
 
-    // Camera
+    // World
+    hittable_list world;
+    world.add(make_shared<sphere>(point3(0,0,-1), 0.5));
+    world.add(make_shared<sphere>(point3(0,-100.5,-1), 100));
 
+    // Camera
     auto viewport_height = 2.0;
     auto viewport_width = aspect_ratio * viewport_height;
     auto focal_length = 1.0;
@@ -73,7 +84,7 @@ int main() {
             auto v = double(j) / (image_height-1);
             //光线从中心射到屏幕上
             ray r(origin, lower_left_corner + u*horizontal + v*vertical - origin);
-            color pixel_color = ray_color(r);
+            color pixel_color = ray_color(r, world);
             write_color(std::cout, pixel_color);
         }
     }
