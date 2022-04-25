@@ -4,7 +4,7 @@ cmake_minimum_required (VERSION 2.8)
 add_definitions(-std=c++17)
 
 # 项目信息
-project (InOneWeekend)
+project(InOneWeekend)
 
 # 查找当前目录下的所有源文件
 # 并将名称保存到 DIR_SRCS 变量
