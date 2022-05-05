@@ -2,10 +2,14 @@
 #define HITTABLE_H
 
 #include "ray.h"
+#include "rtweekend.h"
+
+class material;
 
 struct hit_record {
     point3 p; //交点
     vec3 normal; //法线
+    shared_ptr<material> mat_ptr;
     double t; //命中时间
     bool front_face; //是否是正面
 
